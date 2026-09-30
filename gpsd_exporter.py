@@ -517,7 +517,11 @@ def loop_connection(metrics, args):
 
     try:
         log.info(f'Attempting to connect to gpsd at {args.hostname}:{args.port} with {args.timeout}s timeout')
-        gpsd = gps.gps(host=args.hostname, port=args.port, verbose=1, mode=gps.WATCH_ENABLE | gps.WATCH_NEWSTYLE | gps.WATCH_SCALED)
+        mode = gps.WATCH_ENABLE | gps.WATCH_NEWSTYLE | gps.WATCH_SCALED
+        if args.pps:
+            # gpsd only sends PPS and TOFF reports to clients that ask for them.
+            mode |= gps.WATCH_PPS
+        gpsd = gps.gps(host=args.hostname, port=args.port, verbose=1, mode=mode)
 
         if not gpsd:
             log.critical(f'Could not connect to gpsd at {args.hostname}:{args.port}')
